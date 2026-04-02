@@ -1,0 +1,20 @@
+# Arquivos temporários e intermediários
+.tmp/
+
+# Variáveis de ambiente
+.env
+
+# Credenciais e tokens
+credentials.json
+token.json
+
+# Arquivos do Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Outros
+.DS_Store
+
+# Dependências do Node
+node_modules/

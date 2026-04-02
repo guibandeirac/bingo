@@ -1,0 +1,23 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/api/bingo/criar/route": "/api/bingo/criar",
+  "/api/bingo/iniciar/route": "/api/bingo/iniciar",
+  "/api/bingo/bingo/route": "/api/bingo/bingo",
+  "/api/bingo/gerar-cartelas/route": "/api/bingo/gerar-cartelas",
+  "/api/bingo/sortear/route": "/api/bingo/sortear",
+  "/api/uno/criar/route": "/api/uno/criar",
+  "/api/uno/gerar-bracket/route": "/api/uno/gerar-bracket",
+  "/api/uno/registrar-resultado/route": "/api/uno/registrar-resultado",
+  "/api/uno/gerar-duplas/route": "/api/uno/gerar-duplas",
+  "/(auth)/login/page": "/login",
+  "/page": "/",
+  "/(auth)/cadastro/page": "/cadastro",
+  "/(app)/eventos/[id]/bingo/admin/page": "/eventos/[id]/bingo/admin",
+  "/(app)/eventos/page": "/eventos",
+  "/(app)/dashboard/page": "/dashboard",
+  "/(app)/eventos/[id]/uno/page": "/eventos/[id]/uno",
+  "/(app)/eventos/[id]/uno/admin/page": "/eventos/[id]/uno/admin",
+  "/(app)/eventos/novo/page": "/eventos/novo",
+  "/(app)/eventos/[id]/page": "/eventos/[id]",
+  "/(app)/eventos/[id]/bingo/page": "/eventos/[id]/bingo"
+}

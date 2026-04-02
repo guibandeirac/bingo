@@ -1,0 +1,23 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/bingo/criar/route": "app/api/bingo/criar/route.js",
+  "/api/bingo/iniciar/route": "app/api/bingo/iniciar/route.js",
+  "/api/bingo/bingo/route": "app/api/bingo/bingo/route.js",
+  "/api/bingo/gerar-cartelas/route": "app/api/bingo/gerar-cartelas/route.js",
+  "/api/bingo/sortear/route": "app/api/bingo/sortear/route.js",
+  "/api/uno/criar/route": "app/api/uno/criar/route.js",
+  "/api/uno/gerar-bracket/route": "app/api/uno/gerar-bracket/route.js",
+  "/api/uno/registrar-resultado/route": "app/api/uno/registrar-resultado/route.js",
+  "/api/uno/gerar-duplas/route": "app/api/uno/gerar-duplas/route.js",
+  "/(auth)/login/page": "app/(auth)/login/page.js",
+  "/page": "app/page.js",
+  "/(auth)/cadastro/page": "app/(auth)/cadastro/page.js",
+  "/(app)/eventos/[id]/bingo/admin/page": "app/(app)/eventos/[id]/bingo/admin/page.js",
+  "/(app)/eventos/page": "app/(app)/eventos/page.js",
+  "/(app)/dashboard/page": "app/(app)/dashboard/page.js",
+  "/(app)/eventos/[id]/uno/page": "app/(app)/eventos/[id]/uno/page.js",
+  "/(app)/eventos/[id]/uno/admin/page": "app/(app)/eventos/[id]/uno/admin/page.js",
+  "/(app)/eventos/novo/page": "app/(app)/eventos/novo/page.js",
+  "/(app)/eventos/[id]/page": "app/(app)/eventos/[id]/page.js",
+  "/(app)/eventos/[id]/bingo/page": "app/(app)/eventos/[id]/bingo/page.js"
+}
