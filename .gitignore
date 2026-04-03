@@ -3,6 +3,8 @@
 
 # Variáveis de ambiente
 .env
+.env.local
+.env*.local
 
 # Credenciais e tokens
 credentials.json
