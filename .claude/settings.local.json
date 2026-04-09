@@ -5,7 +5,8 @@
       "mcp__supabase__list_tables",
       "mcp__supabase__list_migrations",
       "Bash(npm install:*)",
-      "Bash(npx next:*)"
+      "Bash(npx next:*)",
+      "mcp__supabase__execute_sql"
     ]
   }
 }

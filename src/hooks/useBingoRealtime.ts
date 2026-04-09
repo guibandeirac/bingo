@@ -40,8 +40,20 @@ export function useBingoRealtime(gameId: string, userId: string) {
     setLoading(false);
   }, [gameId, userId, supabase]);
 
+  const fetchDrawnNumbers = useCallback(async () => {
+    const { data } = await supabase
+      .from("bingo_drawn_numbers")
+      .select("number")
+      .eq("game_id", gameId)
+      .order("drawn_at");
+    if (data) setDrawnNumbers(data.map((r: any) => r.number));
+  }, [gameId, supabase]);
+
   useEffect(() => {
     fetchInitialState();
+
+    // Polling fallback (every 3s) for environments where realtime isn't available
+    const poll = setInterval(fetchDrawnNumbers, 3000);
 
     const channel = supabase
       .channel(`bingo-${gameId}`)
@@ -91,8 +103,11 @@ export function useBingoRealtime(gameId: string, userId: string) {
       )
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
-  }, [gameId, userId, supabase, fetchInitialState]);
+    return () => {
+      clearInterval(poll);
+      supabase.removeChannel(channel);
+    };
+  }, [gameId, userId, supabase, fetchInitialState, fetchDrawnNumbers]);
 
   const markNumber = useCallback(async (number: number) => {
     if (!myCard) return;

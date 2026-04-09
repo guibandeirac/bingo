@@ -82,8 +82,10 @@ export default async function EventoPage({ params }: { params: Promise<{ id: str
                 </Link>
               )}
             </div>
-          ) : isAdmin ? (
+          ) : isAdmin && !unoTournament ? (
             <CreateGameButton eventId={id} type="bingo" />
+          ) : unoTournament ? (
+            <p className="text-sm text-gray-400 mt-2">Este evento já tem um torneio Uno.</p>
           ) : (
             <p className="text-sm text-gray-400 mt-2">Aguardando início</p>
           )}
@@ -110,8 +112,10 @@ export default async function EventoPage({ params }: { params: Promise<{ id: str
                 </Link>
               )}
             </div>
-          ) : isAdmin ? (
+          ) : isAdmin && !bingoGame ? (
             <CreateGameButton eventId={id} type="uno" />
+          ) : bingoGame ? (
+            <p className="text-sm text-gray-400 mt-2">Este evento já tem um jogo de Bingo.</p>
           ) : (
             <p className="text-sm text-gray-400 mt-2">Aguardando início</p>
           )}
@@ -121,7 +125,7 @@ export default async function EventoPage({ params }: { params: Promise<{ id: str
       {/* Participantes */}
       <div className="bg-white rounded-xl border border-gray-200 p-5">
         <h2 className="font-semibold text-gray-900 mb-4">Participantes</h2>
-        <ParticipantesList eventId={id} isAdmin={isAdmin} currentUserId={user!.id} />
+        <ParticipantesList key={isParticipant ? "in" : "out"} eventId={id} isAdmin={isAdmin} currentUserId={user!.id} />
       </div>
     </div>
   );
