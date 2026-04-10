@@ -6,7 +6,7 @@ import type { DbBingoCard, DbBingoGame, BingoWinner } from "@/types/database";
 export function useBingoRealtime(gameId: string, userId: string) {
   const supabase = getSupabaseBrowserClient();
   const [drawnNumbers, setDrawnNumbers] = useState<number[]>([]);
-  const [gameStatus, setGameStatus] = useState<DbBingoGame["status"]>("waiting");
+  const [gameStatus, setGameStatus] = useState<DbBingoGame["status"] | null>(null);
   const [myCard, setMyCard] = useState<DbBingoCard | null>(null);
   const [winners, setWinners] = useState<BingoWinner[]>([]);
   const [loading, setLoading] = useState(true);
@@ -119,5 +119,5 @@ export function useBingoRealtime(gameId: string, userId: string) {
       .eq("id", myCard.id);
   }, [myCard, supabase]);
 
-  return { drawnNumbers, gameStatus, myCard, winners, loading, markNumber };
+  return { drawnNumbers, gameStatus: gameStatus, myCard, winners, loading, markNumber };
 }

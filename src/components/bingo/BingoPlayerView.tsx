@@ -25,6 +25,7 @@ export default function BingoPlayerView({ gameId, userId, initialCard, initialGa
 
   const markedCount = (card?.marked_numbers?.length ?? 0);
   const allMarked = markedCount === 25;
+  const canClaimBingo = allMarked && status === "in_progress";
   const alreadyWon = won || !!card?.position;
 
   if (loading) {
@@ -94,15 +95,13 @@ export default function BingoPlayerView({ gameId, userId, initialCard, initialGa
         onMark={markNumber}
       />
 
-      {/* Bingo button */}
-      {status === "in_progress" && (
-        <BingoButton
-          gameId={gameId}
-          allMarked={allMarked}
-          alreadyWon={alreadyWon}
-          onWin={setWon.bind(null, true)}
-        />
-      )}
+      {/* Bingo button — always visible so player can see when they're close */}
+      <BingoButton
+        gameId={gameId}
+        allMarked={canClaimBingo}
+        alreadyWon={alreadyWon}
+        onWin={setWon.bind(null, true)}
+      />
 
       {/* Tierlist */}
       <BingoTierlist winners={winners} />
