@@ -376,6 +376,71 @@ MIGRATIONS = [
         $$;
         """,
     ),
+    (
+        "010_atomic_bingo_claim",
+        """
+        -- Função que atribui posição de forma atômica, eliminando race condition.
+        -- Usa advisory lock por game_id para serializar claims simultâneos.
+        -- Grava completed_at para TODOS que clicarem BINGO (inclusive após top 5).
+        create or replace function public.claim_bingo_position(
+          p_game_id uuid,
+          p_card_id uuid
+        )
+        returns jsonb
+        language plpgsql
+        security definer
+        as $$
+        declare
+          v_count        integer;
+          v_position     integer;
+          v_completed_at timestamptz;
+          v_existing     timestamptz;
+        begin
+          -- Advisory lock de transação: apenas um claim por jogo por vez.
+          perform pg_advisory_xact_lock(('x' || md5(p_game_id::text))::bit(64)::bigint);
+
+          -- Verifica se já clicou BINGO antes
+          select completed_at into v_existing
+          from public.bingo_cards
+          where id = p_card_id;
+
+          if v_existing is not null then
+            return jsonb_build_object('error', 'already_claimed');
+          end if;
+
+          -- Contagem segura (dentro do lock)
+          select count(*) into v_count
+          from public.bingo_cards
+          where game_id = p_game_id and position is not null;
+
+          v_completed_at := now();
+
+          -- Registra o tempo mesmo quando top 5 já foi preenchido
+          if v_count >= 5 then
+            update public.bingo_cards
+               set completed_at = v_completed_at
+             where id = p_card_id;
+
+            return jsonb_build_object(
+              'completed_at', v_completed_at,
+              'position',     null::integer
+            );
+          end if;
+
+          v_position := v_count + 1;
+
+          update public.bingo_cards
+             set position = v_position, completed_at = v_completed_at
+           where id = p_card_id;
+
+          return jsonb_build_object(
+            'position',     v_position,
+            'completed_at', v_completed_at
+          );
+        end;
+        $$;
+        """,
+    ),
 ]
 
 

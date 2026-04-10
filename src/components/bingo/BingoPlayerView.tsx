@@ -19,6 +19,7 @@ interface Props {
 export default function BingoPlayerView({ gameId, userId, userName, initialCard, initialGameStatus }: Props) {
   const { drawnNumbers, gameStatus, myCard, winners, loading, markNumber, addWinner } = useBingoRealtime(gameId, userId);
   const [wonPosition, setWonPosition] = useState<number | null>(null);
+  const [didComplete, setDidComplete] = useState(false);
 
   const card = myCard ?? initialCard;
   const status = gameStatus ?? initialGameStatus;
@@ -28,12 +29,13 @@ export default function BingoPlayerView({ gameId, userId, userName, initialCard,
   const allMarked = markedCount === 25;
   const canClaimBingo = allMarked && status === "in_progress";
 
-  // Position comes from the confirmed server response (wonPosition) or from realtime card update
   const confirmedPosition = card?.position ?? wonPosition;
-  const alreadyWon = confirmedPosition !== null || wonPosition !== null;
+  // Considera "já completou" tanto quem ganhou posição quanto quem clicou após o top 5
+  const alreadyWon = didComplete || !!card?.completed_at || confirmedPosition !== null;
 
-  function handleWin(position: number, completedAt: string) {
+  function handleWin(position: number | null, completedAt: string) {
     setWonPosition(position);
+    setDidComplete(true);
     addWinner({ user_id: userId, name: userName, position, completed_at: completedAt });
   }
 
@@ -77,26 +79,29 @@ export default function BingoPlayerView({ gameId, userId, userName, initialCard,
     <div className="max-w-lg mx-auto space-y-6">
       <h1 className="text-xl font-bold text-center text-gray-900">🎰 Bingo</h1>
 
-      {/* Current number */}
       {status === "in_progress" && (
         <NumberDisplay currentNumber={currentNumber} totalDrawn={drawnNumbers.length} />
       )}
 
-      {/* Status banner */}
       {status === "finished" && (
         <div className="text-center bg-gray-100 text-gray-600 rounded-xl p-4 font-medium">
           Jogo encerrado
         </div>
       )}
 
-      {/* Winner celebration */}
-      {alreadyWon && confirmedPosition !== null && (
-        <div className="text-center bg-green-100 text-green-800 rounded-xl p-4 font-bold text-lg">
-          🎉 Parabéns! Você completou em {confirmedPosition}º lugar!
+      {/* Resultado do clique no BINGO */}
+      {alreadyWon && (
+        <div className={`text-center rounded-xl p-4 font-bold text-lg ${
+          confirmedPosition !== null
+            ? "bg-green-100 text-green-800"
+            : "bg-blue-50 text-blue-700"
+        }`}>
+          {confirmedPosition !== null
+            ? `🎉 Parabéns! Você completou em ${confirmedPosition}º lugar!`
+            : "✅ Você completou o bingo! O top 5 já havia sido preenchido."}
         </div>
       )}
 
-      {/* My bingo card */}
       <BingoCard
         numbers={card.numbers as number[]}
         markedNumbers={card.marked_numbers as number[]}
@@ -104,7 +109,6 @@ export default function BingoPlayerView({ gameId, userId, userName, initialCard,
         onMark={markNumber}
       />
 
-      {/* Bingo button — always visible so player can see when they're close */}
       <BingoButton
         gameId={gameId}
         allMarked={canClaimBingo}
@@ -112,10 +116,8 @@ export default function BingoPlayerView({ gameId, userId, userName, initialCard,
         onWin={handleWin}
       />
 
-      {/* Tierlist */}
       <BingoTierlist winners={winners} />
 
-      {/* Drawn numbers history */}
       <DrawnNumbersHistory drawnNumbers={drawnNumbers} />
     </div>
   );

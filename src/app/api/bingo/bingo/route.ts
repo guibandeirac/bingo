@@ -20,43 +20,44 @@ export async function POST(req: NextRequest) {
 
   if (!card || !game) return NextResponse.json({ error: "Dados não encontrados" }, { status: 404 });
   if (game.status !== "in_progress") return NextResponse.json({ error: "Jogo não está em andamento" }, { status: 400 });
-  if (card.position) return NextResponse.json({ error: "Você já completou" }, { status: 400 });
+  if (card.completed_at) return NextResponse.json({ error: "Você já clicou no BINGO" }, { status: 400 });
 
   const drawnNumbers = drawn?.map((d) => d.number) ?? [];
   const isValid = validateBingoClaim(card.numbers as number[], card.marked_numbers as number[], drawnNumbers);
   if (!isValid) return NextResponse.json({ error: "BINGO inválido" }, { status: 400 });
 
-  // Count current winners to determine position
-  const { count } = await admin
-    .from("bingo_cards")
-    .select("*", { count: "exact", head: true })
-    .eq("game_id", gameId)
-    .not("position", "is", null);
+  // Atribui posição de forma atômica via função PostgreSQL.
+  // Registra completed_at para todos — inclusive quem chegar após o top 5.
+  const { data: result, error: rpcError } = await admin
+    .rpc("claim_bingo_position", { p_game_id: gameId, p_card_id: card.id });
 
-  const position = (count ?? 0) + 1;
-  if (position > 5) return NextResponse.json({ error: "Já há 5 vencedores" }, { status: 400 });
+  if (rpcError) return NextResponse.json({ error: rpcError.message }, { status: 500 });
 
-  const completedAt = new Date().toISOString();
-  const { error: updateError } = await admin
-    .from("bingo_cards")
-    .update({ position, completed_at: completedAt })
-    .eq("id", card.id);
+  if (result?.error === "already_claimed") {
+    return NextResponse.json({ error: "Você já clicou no BINGO" }, { status: 400 });
+  }
+  if (result?.error) {
+    return NextResponse.json({ error: result.error }, { status: 500 });
+  }
 
-  if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 });
+  const position: number | null = result?.position ?? null;
+  const completedAt: string = result?.completed_at ?? new Date().toISOString();
 
-  // Record in game_results
   const elapsedMs = game.started_at
     ? new Date(completedAt).getTime() - new Date(game.started_at).getTime()
     : 0;
 
-  await admin.from("game_results").insert({
-    event_id: game.event_id,
-    game_type: "bingo",
-    game_id: gameId,
-    user_id: user.id,
-    position,
-    points: POINTS_MAP[position] ?? 0,
-  });
+  // Só entra no ranking quem ficou no top 5
+  if (position !== null) {
+    await admin.from("game_results").insert({
+      event_id: game.event_id,
+      game_type: "bingo",
+      game_id: gameId,
+      user_id: user.id,
+      position,
+      points: POINTS_MAP[position] ?? 0,
+    });
+  }
 
   return NextResponse.json({ position, completed_at: completedAt, elapsed_ms: elapsedMs });
 }

@@ -3,30 +3,32 @@
   "middleware": {
     "/": {
       "files": [
-        "server/edge-runtime-webpack.js",
-        "server/src/middleware.js"
+        "server/edge/chunks/node_modules_next_dist_esm_build_templates_edge-wrapper_0_kjzx3.js",
+        "server/edge/chunks/[root-of-the-server]__13lenmt._.js",
+        "server/edge/chunks/turbopack-node_modules_next_dist_esm_build_templates_edge-wrapper_15t5l6z.js"
       ],
-      "name": "src/middleware",
+      "name": "middleware",
       "page": "/",
+      "entrypoint": "server/edge/chunks/turbopack-node_modules_next_dist_esm_build_templates_edge-wrapper_15t5l6z.js",
       "matchers": [
         {
-          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?(?:\\/((?!_next\\/static|_next\\/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*))(\\.json)?[\\/#\\?]?$",
+          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?(?:\\/((?!_next\\/static|_next\\/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*))(\\\\.json)?[\\/#\\?]?$",
           "originalSource": "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"
         }
       ],
       "wasm": [],
       "assets": [],
       "env": {
-        "__NEXT_BUILD_ID": "jExYqdBYl3KUHyf5cECMT",
+        "__NEXT_BUILD_ID": "vx7rn4S1yz7gWCWOyC1gA",
         "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY": "GEm7jGkxLP8X896L2JZngyya95DRwF4FXuMcAGOmZ+w=",
-        "__NEXT_PREVIEW_MODE_ID": "333566be3949931b8cfabd9fde1c2352",
-        "__NEXT_PREVIEW_MODE_ENCRYPTION_KEY": "b668aae7d26776941efd1ed7e4d885b3f324755ba1c2c73c0f3a34c82437fb07",
-        "__NEXT_PREVIEW_MODE_SIGNING_KEY": "236a6101883394957503c474c56852b9bbd66e4f08c86c2ecccb3bbaaa21249f"
+        "__NEXT_PREVIEW_MODE_ID": "33187088b3c7a8ef262050c17fd9d3bb",
+        "__NEXT_PREVIEW_MODE_ENCRYPTION_KEY": "58dedd3175a1b94e6defda99562f694241aae01606c50dcb29a832e0b31897b5",
+        "__NEXT_PREVIEW_MODE_SIGNING_KEY": "8aa490318aa5e6d89a883a7e219be233eedc749430bdf4173180646d7a3d31d4"
       }
     }
   },
-  "functions": {},
   "sortedMiddleware": [
     "/"
-  ]
+  ],
+  "functions": {}
 }

@@ -7,7 +7,12 @@
       "Bash(npm install:*)",
       "Bash(npx next:*)",
       "mcp__supabase__execute_sql",
-      "Bash(npx vitest:*)"
+      "Bash(npx vitest:*)",
+      "Bash(python execution/check_supabase_health.py)",
+      "Bash(python3 execution/check_supabase_health.py)",
+      "Bash(where py:*)",
+      "Bash(py --version)",
+      "Bash(curl:*)"
     ]
   }
 }

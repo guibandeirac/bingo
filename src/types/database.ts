@@ -125,7 +125,7 @@ export type CellState = "white" | "yellow" | "green";
 export interface BingoWinner {
   user_id: string;
   name: string;
-  position: number;
+  position: number | null; // null se clicou após o top 5 ser preenchido
   completed_at: string; // ISO UTC string — exibir convertido para Brasília
 }
 

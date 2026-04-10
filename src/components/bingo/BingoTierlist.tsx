@@ -15,15 +15,26 @@ export default function BingoTierlist({ winners }: Props) {
     <div className="bg-white rounded-xl border border-gray-200 p-4">
       <p className="text-xs font-medium text-gray-400 uppercase tracking-widest mb-3">Classificação</p>
       <div className="space-y-2">
-        {winners.map((w) => (
-          <div key={w.user_id} className="flex items-center gap-3">
-            <span className="text-xl">{MEDALS[w.position - 1]}</span>
-            <span className="font-semibold text-gray-800 flex-1">{w.name}</span>
-            <span className="text-sm text-gray-500 font-mono tabular-nums">
-              {w.completed_at ? toBrasiliaTime(w.completed_at) : "—"}
-            </span>
-          </div>
-        ))}
+        {winners.map((w, i) => {
+          const medal = w.position != null
+            ? (MEDALS[w.position - 1] ?? `${w.position}º`)
+            : `${i + 1}º`;
+          const isTop5 = w.position != null && w.position <= 5;
+          return (
+            <div
+              key={w.user_id}
+              className={`flex items-center gap-3 rounded-lg px-2 py-1 ${isTop5 ? "bg-gray-50" : ""}`}
+            >
+              <span className="text-xl w-8 text-center shrink-0">{medal}</span>
+              <span className={`font-semibold flex-1 min-w-0 truncate ${isTop5 ? "text-gray-800" : "text-gray-500"}`}>
+                {w.name}
+              </span>
+              <span className="text-sm text-gray-400 font-mono tabular-nums shrink-0">
+                {w.completed_at ? toBrasiliaTime(w.completed_at) : "—"}
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

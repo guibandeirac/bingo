@@ -5,7 +5,7 @@ interface Props {
   gameId: string;
   allMarked: boolean;
   alreadyWon: boolean;
-  onWin: (position: number, completedAt: string) => void;
+  onWin: (position: number | null, completedAt: string) => void;
 }
 
 export default function BingoButton({ gameId, allMarked, alreadyWon, onWin }: Props) {
@@ -25,7 +25,7 @@ export default function BingoButton({ gameId, allMarked, alreadyWon, onWin }: Pr
       if (data.error) {
         setError(data.error);
       } else {
-        onWin(data.position, data.completed_at);
+        onWin(data.position ?? null, data.completed_at);
       }
     } catch {
       setError("Erro ao registrar BINGO. Tente novamente.");

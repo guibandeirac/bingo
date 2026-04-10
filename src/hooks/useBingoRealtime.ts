@@ -12,28 +12,29 @@ export function useBingoRealtime(gameId: string, userId: string) {
   const [loading, setLoading] = useState(true);
 
   const fetchInitialState = useCallback(async () => {
-    const [gameRes, numbersRes, cardRes, winnersRes] = await Promise.all([
+    const [gameRes, numbersRes, cardRes, completersRes] = await Promise.all([
       supabase.from("bingo_games").select("*").eq("id", gameId).single(),
       supabase.from("bingo_drawn_numbers").select("number").eq("game_id", gameId).order("drawn_at"),
       supabase.from("bingo_cards").select("*").eq("game_id", gameId).eq("user_id", userId).maybeSingle(),
+      // Todos que clicaram BINGO (com ou sem posição), ordenados por tempo
       supabase
         .from("bingo_cards")
         .select("user_id, position, completed_at, users(name)")
         .eq("game_id", gameId)
-        .not("position", "is", null)
-        .order("position"),
+        .not("completed_at", "is", null)
+        .order("completed_at"),
     ]);
 
     if (gameRes.data) setGameStatus(gameRes.data.status);
     if (numbersRes.data) setDrawnNumbers(numbersRes.data.map((r: any) => r.number));
     if (cardRes.data) setMyCard(cardRes.data);
-    if (winnersRes.data) {
+    if (completersRes.data) {
       setWinners(
-        (winnersRes.data as any[]).map((w) => ({
+        (completersRes.data as any[]).map((w) => ({
           user_id: w.user_id,
           name: w.users?.name ?? "—",
-          position: w.position,
-          completed_at: w.completed_at ?? new Date().toISOString(),
+          position: w.position ?? null,
+          completed_at: w.completed_at,
         }))
       );
     }
@@ -52,7 +53,7 @@ export function useBingoRealtime(gameId: string, userId: string) {
   useEffect(() => {
     fetchInitialState();
 
-    // Polling fallback (every 3s) for environments where realtime isn't available
+    // Polling fallback (every 3s) para ambientes sem realtime disponível
     const poll = setInterval(fetchDrawnNumbers, 3000);
 
     const channel = supabase
@@ -78,8 +79,8 @@ export function useBingoRealtime(gameId: string, userId: string) {
           const updated = payload.new as any;
           if (updated.user_id === userId) setMyCard(updated);
 
-          if (updated.position && updated.user_id) {
-            // Fetch name for this user
+          // Captura qualquer pessoa que clicou BINGO (position ou apenas completed_at)
+          if (updated.completed_at && updated.user_id) {
             const { data: usr } = await supabase
               .from("users")
               .select("name")
@@ -87,16 +88,25 @@ export function useBingoRealtime(gameId: string, userId: string) {
               .single();
 
             setWinners((prev) => {
-              if (prev.find((w) => w.user_id === updated.user_id)) return prev;
+              const existing = prev.find((w) => w.user_id === updated.user_id);
+              if (existing) {
+                // Atualiza se ganhou posição depois (posição pode ter sido null antes)
+                if (existing.position === null && updated.position != null) {
+                  return prev
+                    .map((w) => w.user_id === updated.user_id ? { ...w, position: updated.position } : w)
+                    .sort((a, b) => new Date(a.completed_at).getTime() - new Date(b.completed_at).getTime());
+                }
+                return prev;
+              }
               return [
                 ...prev,
                 {
                   user_id: updated.user_id,
                   name: (usr as any)?.name ?? "—",
-                  position: updated.position,
-                  completed_at: updated.completed_at ?? new Date().toISOString(),
+                  position: updated.position ?? null,
+                  completed_at: updated.completed_at,
                 },
-              ].sort((a, b) => a.position - b.position);
+              ].sort((a, b) => new Date(a.completed_at).getTime() - new Date(b.completed_at).getTime());
             });
           }
         }
@@ -112,7 +122,8 @@ export function useBingoRealtime(gameId: string, userId: string) {
   const addWinner = useCallback((winner: BingoWinner) => {
     setWinners((prev) => {
       if (prev.find((w) => w.user_id === winner.user_id)) return prev;
-      return [...prev, winner].sort((a, b) => a.position - b.position);
+      return [...prev, winner]
+        .sort((a, b) => new Date(a.completed_at).getTime() - new Date(b.completed_at).getTime());
     });
   }, []);
 

@@ -13,6 +13,8 @@ const STATUS_LABELS: Record<EventStatus, string> = {
   finished: "Finalizado",
 };
 
+const MEDALS = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣"];
+
 export default async function EventoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await getSupabaseServerClient();
@@ -24,12 +26,20 @@ export default async function EventoPage({ params }: { params: Promise<{ id: str
     { data: participation },
     { data: bingoGame },
     { data: unoTournament },
+    { data: bingoResults },
   ] = await Promise.all([
     supabase.from("events").select("*").eq("id", id).single(),
     supabase.from("users").select("*").eq("id", user!.id).single(),
     supabase.from("event_participants").select("id").eq("event_id", id).eq("user_id", user!.id).maybeSingle(),
     supabase.from("bingo_games").select("id, status").eq("event_id", id).maybeSingle(),
     supabase.from("uno_tournaments").select("id, status").eq("event_id", id).maybeSingle(),
+    // Resultados do bingo — visível para todos (RLS: using(true))
+    supabase
+      .from("game_results")
+      .select("position, points, user_id, users(name)")
+      .eq("event_id", id)
+      .eq("game_type", "bingo")
+      .order("position"),
   ]);
 
   if (!event) notFound();
@@ -58,6 +68,24 @@ export default async function EventoPage({ params }: { params: Promise<{ id: str
           isParticipant={isParticipant}
         />
       </div>
+
+      {/* Resultados do Bingo — aparece assim que houver pelo menos 1 vencedor */}
+      {bingoResults && bingoResults.length > 0 && (
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <h2 className="font-semibold text-gray-900 mb-4">🏆 Resultado — Bingo</h2>
+          <div className="space-y-2">
+            {(bingoResults as any[]).map((r) => (
+              <div key={r.user_id} className="flex items-center gap-3">
+                <span className="text-xl w-8 text-center shrink-0">
+                  {MEDALS[r.position - 1] ?? `${r.position}º`}
+                </span>
+                <span className="font-medium text-gray-800 flex-1">{r.users?.name ?? "—"}</span>
+                <span className="text-sm text-blue-700 font-bold">{r.points} pts</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Jogos */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
