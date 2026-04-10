@@ -58,5 +58,5 @@ export async function POST(req: NextRequest) {
     points: POINTS_MAP[position] ?? 0,
   });
 
-  return NextResponse.json({ position, elapsed_ms: elapsedMs });
+  return NextResponse.json({ position, completed_at: completedAt, elapsed_ms: elapsedMs });
 }

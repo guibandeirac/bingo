@@ -16,17 +16,16 @@ export default async function BingoPage({ params }: { params: Promise<{ id: stri
 
   if (!game) notFound();
 
-  const { data: card } = await supabase
-    .from("bingo_cards")
-    .select("*")
-    .eq("game_id", game.id)
-    .eq("user_id", user.id)
-    .maybeSingle();
+  const [{ data: card }, { data: dbUser }] = await Promise.all([
+    supabase.from("bingo_cards").select("*").eq("game_id", game.id).eq("user_id", user.id).maybeSingle(),
+    supabase.from("users").select("name").eq("id", user.id).maybeSingle(),
+  ]);
 
   return (
     <BingoPlayerView
       gameId={game.id}
       userId={user.id}
+      userName={dbUser?.name ?? "—"}
       initialCard={card}
       initialGameStatus={game.status}
     />

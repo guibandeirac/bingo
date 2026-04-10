@@ -109,6 +109,13 @@ export function useBingoRealtime(gameId: string, userId: string) {
     };
   }, [gameId, userId, supabase, fetchInitialState, fetchDrawnNumbers]);
 
+  const addWinner = useCallback((winner: BingoWinner) => {
+    setWinners((prev) => {
+      if (prev.find((w) => w.user_id === winner.user_id)) return prev;
+      return [...prev, winner].sort((a, b) => a.position - b.position);
+    });
+  }, []);
+
   const markNumber = useCallback(async (number: number) => {
     if (!myCard) return;
     const newMarked = [...(myCard.marked_numbers as number[]), number];
@@ -119,5 +126,5 @@ export function useBingoRealtime(gameId: string, userId: string) {
       .eq("id", myCard.id);
   }, [myCard, supabase]);
 
-  return { drawnNumbers, gameStatus: gameStatus, myCard, winners, loading, markNumber };
+  return { drawnNumbers, gameStatus, myCard, winners, loading, markNumber, addWinner };
 }

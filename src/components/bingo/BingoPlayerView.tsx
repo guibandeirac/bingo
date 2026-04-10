@@ -11,13 +11,14 @@ import type { DbBingoCard, DbBingoGame } from "@/types/database";
 interface Props {
   gameId: string;
   userId: string;
+  userName: string;
   initialCard: DbBingoCard | null;
   initialGameStatus: DbBingoGame["status"];
 }
 
-export default function BingoPlayerView({ gameId, userId, initialCard, initialGameStatus }: Props) {
-  const { drawnNumbers, gameStatus, myCard, winners, loading, markNumber } = useBingoRealtime(gameId, userId);
-  const [won, setWon] = useState(false);
+export default function BingoPlayerView({ gameId, userId, userName, initialCard, initialGameStatus }: Props) {
+  const { drawnNumbers, gameStatus, myCard, winners, loading, markNumber, addWinner } = useBingoRealtime(gameId, userId);
+  const [wonPosition, setWonPosition] = useState<number | null>(null);
 
   const card = myCard ?? initialCard;
   const status = gameStatus ?? initialGameStatus;
@@ -26,7 +27,15 @@ export default function BingoPlayerView({ gameId, userId, initialCard, initialGa
   const markedCount = (card?.marked_numbers?.length ?? 0);
   const allMarked = markedCount === 25;
   const canClaimBingo = allMarked && status === "in_progress";
-  const alreadyWon = won || !!card?.position;
+
+  // Position comes from the confirmed server response (wonPosition) or from realtime card update
+  const confirmedPosition = card?.position ?? wonPosition;
+  const alreadyWon = confirmedPosition !== null || wonPosition !== null;
+
+  function handleWin(position: number, completedAt: string) {
+    setWonPosition(position);
+    addWinner({ user_id: userId, name: userName, position, completed_at: completedAt });
+  }
 
   if (loading) {
     return (
@@ -81,9 +90,9 @@ export default function BingoPlayerView({ gameId, userId, initialCard, initialGa
       )}
 
       {/* Winner celebration */}
-      {alreadyWon && (
+      {alreadyWon && confirmedPosition !== null && (
         <div className="text-center bg-green-100 text-green-800 rounded-xl p-4 font-bold text-lg">
-          🎉 Parabéns! Você completou em {card.position}º lugar!
+          🎉 Parabéns! Você completou em {confirmedPosition}º lugar!
         </div>
       )}
 
@@ -100,7 +109,7 @@ export default function BingoPlayerView({ gameId, userId, initialCard, initialGa
         gameId={gameId}
         allMarked={canClaimBingo}
         alreadyWon={alreadyWon}
-        onWin={setWon.bind(null, true)}
+        onWin={handleWin}
       />
 
       {/* Tierlist */}
