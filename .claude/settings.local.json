@@ -12,7 +12,12 @@
       "Bash(python3 execution/check_supabase_health.py)",
       "Bash(where py:*)",
       "Bash(py --version)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(xargs grep *)",
+      "Bash(python execution/audit_event.py)",
+      "Bash(ls /c/Python* /c/Users/guiba/AppData/Local/Programs/Python/)",
+      "Bash(where python *)",
+      "Bash(node execution/audit_event.mjs)"
     ]
   }
 }
