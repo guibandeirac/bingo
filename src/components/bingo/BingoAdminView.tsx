@@ -7,7 +7,8 @@ import DrawnNumbersHistory from "./DrawnNumbersHistory";
 import BingoTierlist from "./BingoTierlist";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useState, useEffect } from "react";
-import type { DbBingoGame } from "@/types/database";
+import type { DbBingoGame, BingoGameMode } from "@/types/database";
+import { GAME_MODE_LABELS } from "@/lib/bingo/modes";
 
 interface Props {
   eventId: string;
@@ -31,9 +32,16 @@ export default function BingoAdminView({ gameId }: Props) {
 
   if (loading || !game) return <div className="text-center py-20 text-gray-400">Carregando...</div>;
 
+  const mode: BingoGameMode = ((game as any).game_mode ?? "full") as BingoGameMode;
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <h1 className="text-xl font-bold text-gray-900">🎰 Bingo — Painel Admin</h1>
+      <div>
+        <h1 className="text-xl font-bold text-gray-900">🎰 Bingo — Painel Admin</h1>
+        <p className="text-xs text-gray-500 mt-1">
+          Modo: <span className="font-semibold text-blue-700">{GAME_MODE_LABELS[mode]}</span>
+        </p>
+      </div>
 
       <AdminBingoPanel
         game={game}
@@ -49,7 +57,7 @@ export default function BingoAdminView({ gameId }: Props) {
 
       {/* Mini cards — visible once cards are generated */}
       {showCards && (
-        <AdminMiniCards gameId={gameId} drawnNumbers={drawnNumbers} />
+        <AdminMiniCards gameId={gameId} drawnNumbers={drawnNumbers} mode={mode} />
       )}
 
       <DrawnNumbersHistory drawnNumbers={drawnNumbers} />

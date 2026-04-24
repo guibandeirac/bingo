@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdminClient, getSupabaseServerClient } from "@/lib/supabase/server";
 import { validateBingoClaim } from "@/lib/bingo/validator";
+import type { BingoGameMode } from "@/types/database";
 
 const POINTS_MAP: Record<number, number> = { 1: 30, 2: 25, 3: 20, 4: 15, 5: 10 };
 
@@ -15,7 +16,7 @@ export async function POST(req: NextRequest) {
   const [{ data: card }, { data: drawn }, { data: game }] = await Promise.all([
     admin.from("bingo_cards").select("*").eq("game_id", gameId).eq("user_id", user.id).single(),
     admin.from("bingo_drawn_numbers").select("number").eq("game_id", gameId),
-    admin.from("bingo_games").select("status, started_at, event_id").eq("id", gameId).single(),
+    admin.from("bingo_games").select("status, started_at, event_id, game_mode").eq("id", gameId).single(),
   ]);
 
   if (!card || !game) return NextResponse.json({ error: "Dados não encontrados" }, { status: 404 });
@@ -23,7 +24,13 @@ export async function POST(req: NextRequest) {
   if (card.completed_at) return NextResponse.json({ error: "Você já clicou no BINGO" }, { status: 400 });
 
   const drawnNumbers = drawn?.map((d) => d.number) ?? [];
-  const isValid = validateBingoClaim(card.numbers as number[], card.marked_numbers as number[], drawnNumbers);
+  const gameMode: BingoGameMode = ((game as any).game_mode ?? "full") as BingoGameMode;
+  const isValid = validateBingoClaim(
+    card.numbers as number[],
+    card.marked_numbers as number[],
+    drawnNumbers,
+    gameMode
+  );
   if (!isValid) return NextResponse.json({ error: "BINGO inválido" }, { status: 400 });
 
   // Atribui posição de forma atômica via função PostgreSQL.

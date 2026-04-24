@@ -28,6 +28,7 @@ export default async function BingoPage({ params }: { params: Promise<{ id: stri
       userName={dbUser?.name ?? "—"}
       initialCard={card}
       initialGameStatus={game.status}
+      initialGameMode={(game as any).game_mode ?? "full"}
     />
   );
 }

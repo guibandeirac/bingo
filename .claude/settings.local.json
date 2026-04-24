@@ -17,7 +17,16 @@
       "Bash(python execution/audit_event.py)",
       "Bash(ls /c/Python* /c/Users/guiba/AppData/Local/Programs/Python/)",
       "Bash(where python *)",
-      "Bash(node execution/audit_event.mjs)"
+      "Bash(node execution/audit_event.mjs)",
+      "Bash(python -c \"import httpx; print\\('ok'\\)\")",
+      "Bash(where node *)",
+      "Bash(node execution/migrate_bingo_game_mode.mjs)",
+      "Bash(npx tsc *)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(node execution/audit_user_score.mjs)",
+      "Bash(node execution/delete_test_events.mjs)",
+      "Bash(cp favicon.png src/app/icon.png)",
+      "Bash(rm favicon.png)"
     ]
   }
 }

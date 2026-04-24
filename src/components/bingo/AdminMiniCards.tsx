@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import type { DbBingoCard, DbUser } from "@/types/database";
+import type { DbBingoCard, BingoGameMode } from "@/types/database";
+import { getRequiredIndices } from "@/lib/bingo/modes";
 
 interface CardWithUser extends DbBingoCard {
   userName: string;
@@ -10,9 +11,10 @@ interface CardWithUser extends DbBingoCard {
 interface Props {
   gameId: string;
   drawnNumbers: number[];
+  mode: BingoGameMode;
 }
 
-export default function AdminMiniCards({ gameId, drawnNumbers }: Props) {
+export default function AdminMiniCards({ gameId, drawnNumbers, mode }: Props) {
   const supabase = getSupabaseBrowserClient();
   const [cards, setCards] = useState<CardWithUser[]>([]);
 
@@ -63,6 +65,7 @@ export default function AdminMiniCards({ gameId, drawnNumbers }: Props) {
             key={card.id}
             card={card}
             drawnSet={drawnSet}
+            mode={mode}
           />
         ))}
       </div>
@@ -70,12 +73,14 @@ export default function AdminMiniCards({ gameId, drawnNumbers }: Props) {
   );
 }
 
-function MiniCard({ card, drawnSet }: { card: CardWithUser; drawnSet: Set<number> }) {
+function MiniCard({ card, drawnSet, mode }: { card: CardWithUser; drawnSet: Set<number>; mode: BingoGameMode }) {
   const numbers = card.numbers as number[];
   const isWinner = !!card.position;
+  const requiredIdxSet = new Set(getRequiredIndices(mode));
 
-  const drawnCount = numbers.filter((n) => drawnSet.has(n)).length;
-  const pct = Math.round((drawnCount / 25) * 100);
+  const requiredCount = requiredIdxSet.size;
+  const drawnCount = numbers.filter((n, i) => requiredIdxSet.has(i) && drawnSet.has(n)).length;
+  const pct = Math.round((drawnCount / requiredCount) * 100);
 
   return (
     <div className={`rounded-xl overflow-hidden border-2 ${isWinner ? "border-green-400" : "border-gray-200"}`}>
@@ -91,15 +96,19 @@ function MiniCard({ card, drawnSet }: { card: CardWithUser; drawnSet: Set<number
 
       {/* 5x5 mini grid */}
       <div className="grid grid-cols-5 gap-px p-1.5 bg-blue-900">
-        {numbers.map((n) => {
+        {numbers.map((n, i) => {
+          const isRequired = requiredIdxSet.has(i);
           const drawn = drawnSet.has(n);
+          const cls = !isRequired
+            ? "bg-gray-300 text-gray-400"
+            : drawn
+              ? "bg-green-400 text-white"
+              : "bg-white text-gray-500";
           return (
             <div
               key={n}
               title={String(n)}
-              className={`aspect-square flex items-center justify-center rounded-sm text-[9px] font-bold select-none ${
-                drawn ? "bg-green-400 text-white" : "bg-white text-gray-500"
-              }`}
+              className={`aspect-square flex items-center justify-center rounded-sm text-[9px] font-bold select-none ${cls}`}
             >
               {n}
             </div>

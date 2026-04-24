@@ -441,6 +441,28 @@ MIGRATIONS = [
         $$;
         """,
     ),
+    (
+        "011_bingo_game_mode",
+        """
+        -- Modo de jogo do bingo: cartela cheia (25), extremidades (16 bordas) ou X (9).
+        -- Restringe o padrão que o jogador precisa completar para reivindicar BINGO.
+        alter table public.bingo_games
+          add column if not exists game_mode text not null default 'full';
+
+        do $$
+        begin
+          if not exists (
+            select 1 from information_schema.constraint_column_usage
+            where constraint_name = 'bingo_games_game_mode_check'
+          ) then
+            alter table public.bingo_games
+              add constraint bingo_games_game_mode_check
+              check (game_mode in ('full', 'border', 'x'));
+          end if;
+        end;
+        $$;
+        """,
+    ),
 ]
 
 

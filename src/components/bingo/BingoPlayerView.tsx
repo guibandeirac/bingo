@@ -6,7 +6,9 @@ import NumberDisplay from "./NumberDisplay";
 import DrawnNumbersHistory from "./DrawnNumbersHistory";
 import BingoTierlist from "./BingoTierlist";
 import BingoButton from "./BingoButton";
-import type { DbBingoCard, DbBingoGame } from "@/types/database";
+import { canClaimBingo } from "@/lib/bingo/validator";
+import { GAME_MODE_LABELS, getRequiredIndices } from "@/lib/bingo/modes";
+import type { DbBingoCard, DbBingoGame, BingoGameMode } from "@/types/database";
 
 interface Props {
   gameId: string;
@@ -14,20 +16,31 @@ interface Props {
   userName: string;
   initialCard: DbBingoCard | null;
   initialGameStatus: DbBingoGame["status"];
+  initialGameMode: BingoGameMode;
 }
 
-export default function BingoPlayerView({ gameId, userId, userName, initialCard, initialGameStatus }: Props) {
+export default function BingoPlayerView({
+  gameId,
+  userId,
+  userName,
+  initialCard,
+  initialGameStatus,
+  initialGameMode,
+}: Props) {
   const { drawnNumbers, gameStatus, myCard, winners, loading, markNumber, addWinner } = useBingoRealtime(gameId, userId);
   const [wonPosition, setWonPosition] = useState<number | null>(null);
   const [didComplete, setDidComplete] = useState(false);
 
   const card = myCard ?? initialCard;
   const status = gameStatus ?? initialGameStatus;
+  const mode = initialGameMode;
   const currentNumber = drawnNumbers[drawnNumbers.length - 1] ?? null;
 
-  const markedCount = (card?.marked_numbers?.length ?? 0);
-  const allMarked = markedCount === 25;
-  const canClaimBingo = allMarked && status === "in_progress";
+  const cardNumbers = (card?.numbers ?? []) as number[];
+  const markedNumbers = (card?.marked_numbers ?? []) as number[];
+  const requiredCount = getRequiredIndices(mode).length;
+  const canClaim = cardNumbers.length === 25 && canClaimBingo(cardNumbers, markedNumbers, mode);
+  const canClaimBingoNow = canClaim && status === "in_progress";
 
   const confirmedPosition = card?.position ?? wonPosition;
   // Considera "já completou" tanto quem ganhou posição quanto quem clicou após o top 5
@@ -77,7 +90,13 @@ export default function BingoPlayerView({ gameId, userId, userName, initialCard,
 
   return (
     <div className="max-w-lg mx-auto space-y-6">
-      <h1 className="text-xl font-bold text-center text-gray-900">🎰 Bingo</h1>
+      <div className="text-center">
+        <h1 className="text-xl font-bold text-gray-900">🎰 Bingo</h1>
+        <p className="text-xs text-gray-500 mt-1">
+          Modo: <span className="font-semibold text-blue-700">{GAME_MODE_LABELS[mode]}</span>
+          {" · "}Marque {requiredCount} casa{requiredCount > 1 ? "s" : ""}
+        </p>
+      </div>
 
       {status === "in_progress" && (
         <NumberDisplay currentNumber={currentNumber} totalDrawn={drawnNumbers.length} />
@@ -103,15 +122,16 @@ export default function BingoPlayerView({ gameId, userId, userName, initialCard,
       )}
 
       <BingoCard
-        numbers={card.numbers as number[]}
-        markedNumbers={card.marked_numbers as number[]}
+        numbers={cardNumbers}
+        markedNumbers={markedNumbers}
         drawnNumbers={drawnNumbers}
+        mode={mode}
         onMark={markNumber}
       />
 
       <BingoButton
         gameId={gameId}
-        allMarked={canClaimBingo}
+        allMarked={canClaimBingoNow}
         alreadyWon={alreadyWon}
         onWin={handleWin}
       />

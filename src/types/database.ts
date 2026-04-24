@@ -1,6 +1,7 @@
 export type UserRole = "player" | "admin";
 export type EventStatus = "open" | "in_progress" | "finished";
 export type BingoGameStatus = "waiting" | "cards_generated" | "in_progress" | "finished";
+export type BingoGameMode = "full" | "border" | "x";
 export type UnoTournamentStatus = "draft" | "duos_generated" | "bracket_generated" | "in_progress" | "finals" | "finished";
 export type BracketType = "winners" | "losers" | "grand_final";
 export type IndividualFinalType = "first_second" | "third_fourth" | "fifth_sixth";
@@ -34,6 +35,7 @@ export interface DbBingoGame {
   id: string;
   event_id: string;
   status: BingoGameStatus;
+  game_mode: BingoGameMode;
   auto_mode: boolean;
   auto_interval_seconds: number | null;
   started_at: string | null;
@@ -120,7 +122,7 @@ export interface BingoCardWithState extends DbBingoCard {
   cellStates: CellState[];
 }
 
-export type CellState = "white" | "yellow" | "green";
+export type CellState = "white" | "yellow" | "green" | "locked";
 
 export interface BingoWinner {
   user_id: string;
