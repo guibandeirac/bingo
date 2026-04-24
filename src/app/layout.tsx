@@ -5,7 +5,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "BotConversa Games",
+  title: "BC Games",
   description: "Plataforma de jogos para equipes — Bingo e Uno",
 };
 
